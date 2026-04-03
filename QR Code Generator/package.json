@@ -1,0 +1,18 @@
+{
+  "name": "qr-generator-project",
+  "version": "1.0.0",
+  "description": "this program will generate a qr code in png format of given input",
+  "license": "ISC",
+  "author": "amritpreet singh",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "inquirer": "^13.3.2",
+    "nodemon": "^3.1.14",
+    "qr-image": "^3.2.0"
+  }
+}
