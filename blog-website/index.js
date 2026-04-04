@@ -5,8 +5,8 @@ import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const app = express()
-const port = 3000
+const app = express();
+const port = process.env.PORT || 3000;
 const filePath = join(__dirname, "data", "blogs.json");
 
 
@@ -173,5 +173,5 @@ app.post("/edit-blog-data/:id", (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Server running on port ${port}`);
+});
