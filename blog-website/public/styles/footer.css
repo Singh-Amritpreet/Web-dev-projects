@@ -1,0 +1,26 @@
+/* ── footer.css ── */
+footer {
+  background: #111;
+  color: #ccc;
+  height: 64px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 1px solid #222;
+}
+
+footer p {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 480px) {
+  footer {
+    height: 56px;
+  }
+
+  footer p {
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,152 @@
+/* ── edit-form-style.css ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background-color: #fafafa;
+  color: #111;
+}
+
+.edit-blog-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Form section ── */
+.edit-form-section {
+  flex: 1;
+  padding: 110px 140px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.edit-form-section::before {
+  content: "Edit Post";
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+.editing-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Inputs ── */
+form input,
+form textarea {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: "Inter", sans-serif;
+  color: #111;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+form input:focus,
+form textarea:focus {
+  border-color: #111;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.07);
+}
+
+form input::placeholder,
+form textarea::placeholder {
+  color: #aaa;
+}
+
+form textarea {
+  min-height: 240px;
+  resize: vertical;
+  line-height: 1.7;
+}
+
+/* ── Save button ── */
+.editing-form button[type="submit"] {
+  align-self: flex-start;
+  padding: 12px 32px;
+  border: none;
+  background-color: #111;
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.editing-form button[type="submit"]:hover {
+  background-color: #333;
+  transform: translateY(-1px);
+}
+
+/* ── Delete button (separate form) ── */
+.delete-btn button[type="submit"] {
+  align-self: flex-start;
+  padding: 11px 28px;
+  border: 1.5px solid #e53e3e;
+  background-color: transparent;
+  color: #e53e3e;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.delete-btn button[type="submit"]:hover {
+  background-color: #e53e3e;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* ── Divider between save & delete ── */
+.delete-btn {
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+/* ── Tablet ── */
+@media (max-width: 900px) {
+  .edit-form-section {
+    padding: 100px 48px 48px;
+  }
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .edit-form-section {
+    padding: 88px 20px 40px;
+    gap: 14px;
+  }
+
+  form textarea {
+    min-height: 180px;
+  }
+
+  .editing-form button[type="submit"],
+  .delete-btn button[type="submit"] {
+    width: 100%;
+    text-align: center;
+    align-self: stretch;
+  }
+}

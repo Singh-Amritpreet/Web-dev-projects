@@ -1,0 +1,100 @@
+/* ── header.css ── */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0 140px;
+  height: 70px;
+  width: 100%;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s ease;
+}
+
+.nav-left {
+  display: flex;
+  gap: 48px;
+  align-items: center;
+}
+
+#nav-left-a-home {
+  text-decoration: none;
+  color: #000;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.nav-left a {
+  text-decoration: none;
+  color: #555;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.nav-left a:hover {
+  color: #000;
+}
+
+.nav-right {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.icon {
+  font-size: 22px;
+  color: #444;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.icon:hover {
+  color: #000;
+  transform: translateY(-1px);
+}
+
+/* ── Tablet ── */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 24px;
+    height: 60px;
+  }
+
+  .nav-left {
+    gap: 24px;
+  }
+
+  #nav-left-a-home {
+    font-size: 16px;
+  }
+
+  .nav-left a {
+    font-size: 14px;
+  }
+
+  .icon {
+    font-size: 20px;
+  }
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0 16px;
+  }
+
+  .nav-left {
+    gap: 18px;
+  }
+
+  .nav-right {
+    gap: 14px;
+  }
+}

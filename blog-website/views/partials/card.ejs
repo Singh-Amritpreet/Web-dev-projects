@@ -1,0 +1,14 @@
+<% for (let i=0; i < blogs.length; i++) { %>
+    <div class="card">
+        <h2>
+            <%= blogs[i].title.length> 25
+                ? blogs[i].title.slice(0, 25) + "..."
+                : blogs[i].title %>
+        </h2>
+
+        <div class="grid-buttons">
+            <button class="view-btn" data-id="<%= blogs[i].id %>">View</button>
+            <button class="edit-btn" data-id="<%= blogs[i].id %>">Edit</button>
+        </div>
+    </div>
+    <% } %>
