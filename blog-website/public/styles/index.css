@@ -147,7 +147,7 @@ button:hover {
 /* ── Tablet ── */
 @media (max-width: 900px) {
   .container {
-    padding: 0 40px 60px;
+    padding: 20px 40px 60px;
     gap: 20px;
   }
 
@@ -171,8 +171,9 @@ button:hover {
 
   .container {
     grid-template-columns: 1fr;
-    padding: 0 16px 48px;
+    padding: 16px 16px;
     gap: 16px;
+
   }
 
   .card {
