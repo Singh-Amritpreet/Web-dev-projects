@@ -1,0 +1,12 @@
+{
+  "name": "uv-project",
+  "version": "1.0.0",
+  "description": "uv forecasting and recommedation system",
+  "license": "ISC",
+  "author": "Amritpreet Singh",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
