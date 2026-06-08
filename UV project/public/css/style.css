@@ -1,3 +1,109 @@
-html {
-    color: red;
+body {
+    margin: 0;
+    background-color: #F9F8FF;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+header {
+    background: white;
+    border-bottom: 1px solid #EFEFF5;
+    text-align: center;
+    padding: 1rem;
+}
+
+h1 {
+    margin: 0;
+    color: #845301;
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+main {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 1rem;
+}
+
+.content {
+    background-color: #FFFFFF;
+    width: 90%;
+    max-width: 500px;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+#status {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+#current-uv {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #845301;
+}
+
+#max-uv {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+#suggestion {
+    text-align: center;
+    font-size: 1.1rem;
+    max-width: 30ch;
+}
+
+.data p {
+    margin: 0;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    main {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .data {
+        width: 100%;
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    #current-uv {
+        font-size: 2.5rem;
+    }
+
+    #max-uv {
+        font-size: 1.25rem;
+    }
+
+    #suggestion {
+        font-size: 1rem;
+        max-width: 100%;
+    }
+
+    footer {
+        padding: 1.5rem 1rem;
+        font-size: 0.85rem;
+    }
 }
