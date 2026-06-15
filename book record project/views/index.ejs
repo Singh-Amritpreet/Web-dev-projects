@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Book Notes</title>
+    <link rel="stylesheet" href="css/index-style.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Header -->
+        <header class="page-header">
+            <h1>📚 My Book Notes</h1>
+
+            <div class="header-actions">
+                <div class="sort-box">
+                    <label for="sort">Sort:</label>
+
+                    <select id="sort">
+                        <option value="rating">Rating</option>
+                        <option value="date">Date</option>
+                        <option value="title">Title</option>
+                    </select>
+                </div>
+
+                <a href="/add" class="btn">+ Add Book</a>
+            </div>
+        </header>
+
+        <!-- Books Container -->
+        <div id="books-container">
+
+            <% data.forEach(book=> { %>
+
+                <article class="book-card" data-rating="<%= book.rating %>" data-date="<%= book.date_read %>"
+                    data-title="<%= book.title %>">
+
+                    <img src="https://covers.openlibrary.org/b/isbn/<%= book.isbn %>-L.jpg"
+                        alt="<%= book.title %> Cover" class="book-cover">
+
+                    <div class="book-content">
+
+                        <div class="book-top">
+                            <h2>
+                                <%= book.title %>
+                            </h2>
+
+                            <span class="rating">
+                                ⭐ <%= book.rating %>/10
+                            </span>
+                        </div>
+
+                        <p class="date">
+                            📅 <%= book.date_read %>
+                        </p>
+
+                        <p class="summary">
+                            <%= book.review.split(" ").slice(0, 80).join(" ") %>...
+                        </p>
+
+                        <a href=" /books/<%=book.isbn %>" class="read-more">
+                                Read More →
+                                </a>
+
+                    </div>
+
+                </article>
+
+                <% }); %>
+
+        </div>
+
+    </div>
+
+    <script>
+        const sortSelect = document.getElementById("sort");
+        const booksContainer = document.getElementById("books-container");
+
+        sortSelect.addEventListener("change", () => {
+
+            const books = Array.from(
+                booksContainer.querySelectorAll(".book-card")
+            );
+
+            const sortBy = sortSelect.value;
+
+            books.sort((a, b) => {
+
+                if (sortBy === "rating") {
+                    return Number(b.dataset.rating) -
+                        Number(a.dataset.rating);
+                }
+
+                if (sortBy === "date") {
+                    return new Date(b.dataset.date) -
+                        new Date(a.dataset.date);
+                }
+
+                if (sortBy === "title") {
+                    return a.dataset.title.localeCompare(
+                        b.dataset.title
+                    );
+                }
+
+            });
+
+            books.forEach(book => {
+                booksContainer.appendChild(book);
+            });
+
+        });
+
+        // Sort by rating on initial page load
+        sortSelect.dispatchEvent(new Event("change"));
+    </script>
+
+</body>
+
+</html>

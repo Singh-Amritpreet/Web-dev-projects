@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= data.title %>
+    </title>
+
+    <link rel="stylesheet" href="/css/book-style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <a href="/" class="back-btn">← Back to Books</a>
+
+        <div class="book-header">
+
+            <img src="https://covers.openlibrary.org/b/isbn/<%= data.isbn %>-L.jpg" alt="<%= data.title %> Cover"
+                class="book-cover">
+
+            <div class="book-info">
+
+                <h1>
+                    <%= data.title %>
+                </h1>
+
+                <div class="meta">
+                    <span>By <%= data.author %></span>
+                    <span>⭐ <%= data.rating %>/10</span>
+                    <span>📅 <%= data.date_read.toLocaleDateString("en-GB") %></span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <section class="review-section">
+
+            <h2>Review / Notes</h2>
+
+            <p>
+                <%= data.review %>
+            </p>
+
+        </section>
+
+        <div class="book-actions">
+
+            <form action="/edit/<%= data.isbn %>" method="GET">
+                <button type="submit" class="btn edit-btn">
+                    Edit
+                </button>
+            </form>
+
+            <form action="/delete/<%= data.isbn %>" method="POST" onsubmit="return confirm('Delete this book?')">
+                <button type="submit" class="btn delete-btn">
+                    Delete
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
