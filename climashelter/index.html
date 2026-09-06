@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLIMASHELTER — Thermal Performance Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#10141A;
+    --bg-raised:#171D24;
+    --bg-raised-2:#1C232B;
+    --bg-inset:#0C0F13;
+    --line:#28313A;
+    --line-strong:#3A4650;
+    --text:#E7EAEE;
+    --text-muted:#8D97A3;
+    --text-faint:#5C6670;
+    --accent:#D8A94E;
+    --gain:#D8A94E;
+    --loss:#5C8FC2;
+    --good:#5FAE7A;
+    --ok:#D8A94E;
+    --poor:#C1594B;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background-color:var(--bg);
+    background-image: radial-gradient(var(--line) 1px, transparent 1px);
+    background-size:26px 26px;
+    background-position:-13px -13px;
+    color:var(--text);
+    font-family:'IBM Plex Sans', 'IBM Plex Mono', monospace;
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; font-weight:600; margin:0; letter-spacing:-0.01em; }
+  button, select, input{ font-family:inherit; }
+  ::selection{ background:var(--accent); color:#0B0E12; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  a{ color:inherit; }
+
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px;
+    padding:12px 20px;
+    background:rgba(16,20,26,0.94);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar .brand{ display:flex; align-items:baseline; gap:10px; white-space:nowrap; }
+  .topbar .brand .mark{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1.05rem; }
+  .topbar .brand .tagline{ font-size:0.74rem; color:var(--text-faint); }
+  .topbar .tools{ display:flex; align-items:center; gap:10px; }
+  .btn{
+    background:var(--bg-raised-2);
+    border:1px solid var(--line-strong);
+    color:var(--text);
+    padding:8px 14px;
+    font-size:0.78rem;
+    cursor:pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .btn:hover{ border-color:var(--accent); }
+  .btn.ghost{ background:transparent; }
+  .sidebar-toggle{ display:none; }
+  .live-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--good);
+    display:inline-block; margin-right:7px;
+    box-shadow:0 0 0 3px rgba(95,174,122,0.15);
+  }
+  .live-badge{ font-size:0.72rem; color:var(--text-muted); display:flex; align-items:center; }
+
+  .app-shell{ display:flex; align-items:flex-start; }
+
+  .sidebar{
+    width:340px; flex-shrink:0;
+    border-right:1px solid var(--line);
+    height:calc(100vh - 49px);
+    overflow-y:auto;
+    position:sticky; top:49px;
+    padding:22px 20px 60px;
+  }
+  .sidebar::-webkit-scrollbar{ width:8px; }
+  .sidebar::-webkit-scrollbar-thumb{ background:var(--line-strong); }
+
+  .group{ margin-bottom:30px; }
+  .group-title{
+    font-size:0.72rem;
+    color:var(--text-faint);
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:14px;
+  }
+  .group-title .dash{ width:20px; height:1px; background:var(--line-strong); }
+
+  .preset-row{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+  .preset-btn{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    color:var(--text-muted);
+    padding:9px 8px;
+    font-size:0.72rem;
+    text-align:left;
+    cursor:pointer;
+    transition:border-color .15s, color .15s;
+  }
+  .preset-btn:hover{ color:var(--text); }
+  .preset-btn.active{ border-color:var(--accent); color:var(--text); }
+
+  .field{ margin-bottom:16px; }
+  .field-label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:0.8rem; color:var(--text); margin-bottom:6px;
+  }
+  .field-label .field-value{ color:var(--accent); font-size:0.78rem; }
+  .field-hint{ font-size:0.7rem; color:var(--text-faint); margin-top:5px; }
+  input[type=range]{
+    width:100%; height:4px;
+    -webkit-appearance:none; appearance:none;
+    background:var(--line-strong);
+    outline:none;
+    margin:6px 0;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:13px; height:13px;
+    background:var(--accent);
+    cursor:pointer;
+    border:2px solid var(--bg);
+    box-shadow:0 0 0 1px var(--accent);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:13px; height:13px; border-radius:0;
+    background:var(--accent); border:2px solid var(--bg);
+    box-shadow:0 0 0 1px var(--accent); cursor:pointer;
+  }
+  select{
+    width:100%;
+    background:var(--bg-raised);
+    color:var(--text);
+    border:1px solid var(--line-strong);
+    padding:9px 10px;
+    font-size:0.82rem;
+  }
+  .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .backdrop{
+    display:none;
+    position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:39;
+  }
+
+  .main{ flex:1; min-width:0; padding:26px 28px 70px; }
+
+  .status-line{
+    display:flex; align-items:center; gap:10px;
+    font-size:0.82rem; color:var(--text-muted);
+    margin-bottom:20px;
+  }
+  .status-dot{ width:9px; height:9px; border-radius:50%; background:var(--ok); flex-shrink:0; }
+  .status-line b{ color:var(--text); font-weight:600; }
+
+  .kpi-row{
+    display:grid;
+    grid-template-columns:repeat(6, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-bottom:20px;
+  }
+  .kpi{ background:var(--bg-raised); padding:16px 16px 14px; }
+  .kpi .kpi-label{ font-size:0.68rem; color:var(--text-faint); margin-bottom:8px; min-height:26px; }
+  .kpi .kpi-value{ font-family:'Space Grotesk', sans-serif; font-size:1.35rem; font-weight:700; }
+  .kpi .kpi-sub{ font-size:0.7rem; color:var(--text-muted); margin-top:4px; }
+
+  .panel-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .panel{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    padding:18px 20px 20px;
+    position:relative;
+  }
+  .panel.span2{ grid-column:1 / -1; }
+  .panel h3{ font-size:0.84rem; margin-bottom:4px; }
+  .panel .panel-sub{ font-size:0.72rem; color:var(--text-faint); margin-bottom:14px; }
+  .legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:0.72rem; color:var(--text-muted); margin-top:10px; }
+  .legend span{ display:flex; align-items:center; gap:6px; }
+  .legend i{ width:14px; height:2px; display:inline-block; }
+  .legend i.dashed{ background-image:linear-gradient(90deg, currentColor 50%, transparent 50%); background-size:6px 2px; height:2px; }
+  .legend i.band{ width:10px; height:10px; }
+
+  table.a-table{ width:100%; border-collapse:collapse; font-size:0.8rem; }
+  table.a-table th, table.a-table td{ border:1px solid var(--line); padding:9px 12px; text-align:left; }
+  table.a-table th{ color:var(--text-faint); font-size:0.68rem; font-weight:500; background:var(--bg-raised-2); }
+  table.a-table td.num{ font-family:'IBM Plex Mono', monospace; }
+
+  .methodology{
+    font-size:0.76rem; color:var(--text-faint);
+    max-width:840px;
+    border-top:1px solid var(--line);
+    padding-top:16px;
+    margin-top:6px;
+  }
+  .methodology b{ color:var(--text-muted); font-weight:500; }
+
+  @media (max-width:1000px){
+    .kpi-row{ grid-template-columns:repeat(3, 1fr); }
+    .panel-grid{ grid-template-columns:1fr; }
+  }
+  @media (max-width:860px){
+    .sidebar-toggle{ display:inline-flex; }
+    .sidebar{
+      position:fixed; top:49px; left:0; bottom:0;
+      z-index:40; background:var(--bg);
+      transform:translateX(-100%);
+      transition:transform .2s ease;
+      width:300px; height:calc(100vh - 49px);
+    }
+    .sidebar.open{ transform:translateX(0); }
+    .backdrop.open{ display:block; }
+    .main{ padding:20px 16px 60px; }
+  }
+  @media (max-width:560px){
+    .kpi-row{ grid-template-columns:repeat(2, 1fr); }
+    .row-2{ grid-template-columns:1fr; }
+    .preset-row{ grid-template-columns:1fr; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div style="display:flex; align-items:center; gap:14px;">
+    <button class="btn ghost sidebar-toggle" id="sidebarToggle">Inputs</button>
+    <div class="brand">
+      <span class="mark">CLIMASHELTER</span>
+      <span class="tagline mono">thermal performance console</span>
+    </div>
+  </div>
+  <div class="tools">
+    <span class="live-badge"><span class="live-dot"></span>recalculates as you edit</span>
+    <button class="btn" id="resetBtn">Reset to defaults</button>
+  </div>
+</header>
+
+<div class="app-shell">
+  <div class="backdrop" id="backdrop"></div>
+
+  <aside class="sidebar" id="sidebar">
+
+    <div class="group">
+      <div class="group-title mono"><span class="dash"></span>site &amp; climate</div>
+      <div class="preset-row" id="presetRow">
+        <button class="preset-btn" data-preset="cold">Cold, alpine</button>
+        <button class="preset-btn" data-preset="hotdry">Hot &amp; dry</button>
+        <button class="preset-btn" data-preset="humid">Hot &amp; humid</button>
+        <button class="preset-btn" data-preset="temperate">Temperate</button>
+      </div>
+      <div class="field-hint" style="margin-bottom:14px;">Loading a preset sets typical daily conditions below. Switching climates keeps your current shelter design in place, so you can see how it holds up elsewhere.</div>
+
+      <div class="field">
+        <div class="field-label"><span>Ambient low / high</span><span class="field-value mono" id="ambVal">−12° / 8°C</span></div>
+        <div class="row-2">
+          <input type="range" id="tmin" min="-25" max="30" step="1" value="-12">
+          <input type="range" id="tmax" min="0" max="50" step="1" value="8">
+        </div>
+        <div class="field-hint">Typical daily minimum and maximum outdoor temperature for the design day.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span>Peak solar radiation</span><span class="field-value mono" id="solarVal">750 W/m²</span></div>
+        <input type="range" id="solar" min="300" max="1000" step="10" value="750">
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span>Prevailing wind speed</span><span class="field-value mono" id="windVal">4.0 m/s</span></div>
+        <input type="range" id="wind" min="0" max="12" step="0.5" value="4">
+        <div class="field-hint">Higher wind increases infiltration through gaps and openings.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span>Relative humidity</span><span class="field-value mono" id="humVal">25%</span></div>
+        <input type="range" id="humidity" min="10" max="95" step="1" value="25">
+        <div class="field-hint">Above ~60%, evaporative cooling loses effectiveness, so the comfort ceiling tightens slightly.</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-title mono"><span class="dash"></span>form &amp; orientation</div>
+      <div class="field">
+        <div class="field-label"><span>Length × width</span><span class="field-value mono" id="dimVal">6.0 × 4.0 m</span></div>
+        <div class="row-2">
+          <input type="range" id="lenL" min="3" max="15" step="0.5" value="6">
+          <input type="range" id="lenW" min="3" max="12" step="0.5" value="4">
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Internal height</span><span class="field-value mono" id="heightVal">2.6 m</span></div>
+        <input type="range" id="lenH" min="2.2" max="4.5" step="0.1" value="2.6">
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Primary glazing faces</span><span class="field-value mono" id="azVal">0° · south</span></div>
+        <input type="range" id="azimuth" min="0" max="345" step="15" value="0">
+        <div class="field-hint">South-facing openings take the most direct winter sun in the northern hemisphere — useful in cold climates, a liability in hot ones.</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-title mono"><span class="dash"></span>envelope assembly</div>
+      <div class="field">
+        <div class="field-label"><span>Wall material</span></div>
+        <select id="wallMaterial">
+          <option value="cseb">Compressed stabilized earth block</option>
+          <option value="adobe">Rammed earth / adobe</option>
+          <option value="brick">Fired clay brick</option>
+          <option value="stone">Rubble stone masonry</option>
+          <option value="concrete">Dense concrete block</option>
+          <option value="aac">Autoclaved aerated concrete block</option>
+          <option value="sandwich" selected>Insulated sandwich panel (PUF core)</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Wall thickness</span><span class="field-value mono" id="thickVal">150 mm</span></div>
+        <input type="range" id="wallThickness" min="100" max="600" step="10" value="150">
+        <div class="field-hint">More thickness of a dense material adds thermal mass; more thickness of an insulating material adds resistance to heat flow.</div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Roof assembly</span></div>
+        <select id="roofAssembly">
+          <option value="metal">Corrugated metal sheet, uninsulated</option>
+          <option value="rcc">RCC slab, uninsulated</option>
+          <option value="rccins">RCC slab with rigid insulation</option>
+          <option value="sandwichroof" selected>Insulated metal sandwich roof</option>
+          <option value="thatch">Timber frame with thatch</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-title mono"><span class="dash"></span>openings &amp; airflow</div>
+      <div class="field">
+        <div class="field-label"><span>Window-to-wall ratio</span><span class="field-value mono" id="winRatioVal">15%</span></div>
+        <input type="range" id="windowRatio" min="5" max="60" step="1" value="15">
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Glazing type</span></div>
+        <select id="glazing">
+          <option value="single">Single clear glazing</option>
+          <option value="double">Double glazing, clear</option>
+          <option value="doublelowe">Double glazing, low-E</option>
+          <option value="triplelowe" selected>Triple glazing, low-E</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Air changes per hour</span><span class="field-value mono" id="achVal">0.4 ACH</span></div>
+        <input type="range" id="ach" min="0.2" max="5" step="0.1" value="0.4">
+        <div class="field-hint">Deliberate ventilation and leakage combined. Raise this in humid climates to purge heat; lower it where sealing in warmth matters more.</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-title mono"><span class="dash"></span>comfort target</div>
+      <div class="field">
+        <div class="field-label"><span>Acceptable indoor range</span><span class="field-value mono" id="comfortVal">18° – 26°C</span></div>
+        <div class="row-2">
+          <input type="range" id="comfortMin" min="10" max="24" step="0.5" value="18">
+          <input type="range" id="comfortMax" min="20" max="32" step="0.5" value="26">
+        </div>
+        <div class="field-hint">The band used to judge passive performance and to size the backup heating/cooling estimate.</div>
+      </div>
+    </div>
+
+  </aside>
+
+  <main class="main">
+
+    <div class="status-line">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Reading design…</span>
+    </div>
+
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi">
+        <div class="kpi-label">Peak indoor temp<br>(passive, no backup)</div>
+        <div class="kpi-value mono" id="kpiPeak">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Low indoor temp<br>(passive, no backup)</div>
+        <div class="kpi-value mono" id="kpiLow">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Daily swing<br>(peak − low)</div>
+        <div class="kpi-value mono" id="kpiSwing">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Hours in comfort band<br>without any backup</div>
+        <div class="kpi-value mono" id="kpiHours">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Backup energy needed<br>to hold the comfort band</div>
+        <div class="kpi-value mono" id="kpiEnergy">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">vs. a generic reference<br>construction, same site</div>
+        <div class="kpi-value mono" id="kpiCompare">—</div>
+      </div>
+    </div>
+
+    <div class="panel-grid">
+      <div class="panel span2">
+        <h3>24-hour indoor response</h3>
+        <div class="panel-sub">Simulated indoor temperature against the ambient cycle, once the building has settled into a repeating daily pattern.</div>
+        <div id="chartHost"></div>
+        <div class="legend">
+          <span><i style="background:var(--text-faint)"></i>Ambient</span>
+          <span><i style="background:var(--accent)"></i>Indoor — your design, passive</span>
+          <span><i class="dashed" style="color:var(--loss)"></i>Indoor — with backup conditioning</span>
+          <span><i class="band" style="background:var(--accent); opacity:0.25;"></i>Comfort target</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Section reference</h3>
+        <div class="panel-sub">Schematic only — not to scale. Colour reflects passive performance.</div>
+        <div id="sectionHost"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Where the heat comes from</h3>
+        <div class="panel-sub">Net daily energy flow by pathway, passive case (kWh/day).</div>
+        <div id="balanceHost"></div>
+      </div>
+
+      <div class="panel span2">
+        <h3>Envelope summary</h3>
+        <div class="panel-sub">Heat-transfer coefficients and daily exchange for each part of the envelope, at the current design.</div>
+        <table class="a-table" id="assemblyTable">
+          <thead>
+            <tr><th>Component</th><th>Coefficient</th><th>Area</th><th>Daily exchange</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="methodology">
+      <b>Model notes.</b> This console runs a simplified single-zone, lumped-capacitance heat-balance model: one indoor air-and-mass node exchanging heat with the outside through the walls, roof and glazing, plus ventilation and solar gain through windows. It does not account for ground coupling, shading geometry, occupant loads, or moisture transport. The backup energy figure assumes an idealised thermostat that exactly holds the comfort band — a proxy for the heating or cooling load a mechanical system would otherwise need to cover. Treat results as directional, for comparing design choices against each other and against a reference construction, not as a certified energy calculation.
+    </p>
+
+  </main>
+</div>
+
+<script>
+'use strict';
+
+/* ---------------- Reference data ---------------- */
+
+const WALL_MATERIALS = {
+  cseb:        { label:'Compressed stabilized earth block', k:0.60, rho:1700, cp:850 },
+  adobe:       { label:'Rammed earth / adobe',               k:0.55, rho:1600, cp:850 },
+  brick:       { label:'Fired clay brick',                   k:0.72, rho:1700, cp:840 },
+  stone:       { label:'Rubble stone masonry',               k:1.40, rho:2200, cp:850 },
+  concrete:    { label:'Dense concrete block',                k:1.65, rho:2300, cp:880 },
+  aac:         { label:'Autoclaved aerated concrete block',   k:0.16, rho:550,  cp:1000 },
+  sandwich:    { label:'Insulated sandwich panel (PUF core)', k:0.03, rho:120,  cp:1000 }
+};
+
+const ROOF_ASSEMBLIES = {
+  metal:       { label:'Corrugated metal sheet, uninsulated', U:6.5,  mass:8000 },
+  rcc:         { label:'RCC slab, uninsulated',                U:3.4,  mass:260000 },
+  rccins:      { label:'RCC slab with rigid insulation',       U:0.55, mass:270000 },
+  sandwichroof:{ label:'Insulated metal sandwich roof',        U:0.35, mass:12000 },
+  thatch:      { label:'Timber frame with thatch',             U:1.35, mass:18000 }
+};
+
+const GLAZING = {
+  single:      { label:'Single clear glazing',      U:5.8, shgc:0.82 },
+  double:      { label:'Double glazing, clear',      U:2.8, shgc:0.70 },
+  doublelowe:  { label:'Double glazing, low-E',      U:1.6, shgc:0.42 },
+  triplelowe:  { label:'Triple glazing, low-E',      U:0.9, shgc:0.35 }
+};
+
+const CLIMATE_PRESETS = {
+  cold:      { label:'Cold — alpine',        tmin:-12, tmax:8,  solar:750, wind:4.0, humidity:25 },
+  hotdry:    { label:'Hot & dry — desert',   tmin:22,  tmax:44, solar:900, wind:3.0, humidity:20 },
+  humid:     { label:'Hot & humid — coastal',tmin:25,  tmax:33, solar:650, wind:2.5, humidity:80 },
+  temperate: { label:'Temperate — seasonal', tmin:8,   tmax:27, solar:700, wind:3.0, humidity:55 }
+};
+
+const BASELINE_DESIGN = {
+  wallMaterial:'brick', wallThicknessMM:115, roofAssembly:'metal',
+  glazing:'single', windowRatio:0.50, ach:2.5, azimuth:90
+};
+
+const DEFAULTS = {
+  climate: { tmin:-12, tmax:8, solar:750, wind:4.0, humidity:25 },
+  geometry: { L:6, W:4, H:2.6 },
+  design: { wallMaterial:'sandwich', wallThicknessMM:150, roofAssembly:'sandwichroof',
+            glazing:'triplelowe', windowRatio:0.15, ach:0.4, azimuth:0 },
+  comfort: { min:18, max:26 }
+};
+
+/* ---------------- Physics helpers ---------------- */
+
+function orientationMultiplier(azimuthDeg){
+  const rad = azimuthDeg * Math.PI / 180;
+  return 0.6 + 0.4 * Math.cos(rad);
+}
+
+function facingLabel(deg){
+  const norm = ((deg % 360) + 360) % 360;
+  const points = ['south','south-west','west','north-west','north','north-east','east','south-east'];
+  const idx = Math.round(norm / 45) % 8;
+  return points[idx];
+}
+
+function ambientAt(tHours, tmin, tmax){
+  const mean = (tmin + tmax) / 2;
+  const amp = (tmax - tmin) / 2;
+  return mean + amp * Math.cos(2 * Math.PI * (tHours - 15) / 24);
+}
+
+function solarAt(tHours, peak){
+  if (tHours < 6 || tHours > 18) return 0;
+  return peak * Math.max(0, Math.sin(Math.PI * (tHours - 6) / 12));
+}
+
+function effectiveACH(ach, wind){
+  return ach * (1 + 0.12 * wind);
+}
+
+function effectiveComfortMax(max, humidity){
+  return max - Math.max(0, (humidity - 60)) * 0.05;
+}
+
+function computeStatics(design, geometry){
+  const wm = WALL_MATERIALS[design.wallMaterial];
+  const roof = ROOF_ASSEMBLIES[design.roofAssembly];
+  const glz = GLAZING[design.glazing];
+  const thicknessM = design.wallThicknessMM / 1000;
+
+  const Rwall = thicknessM / wm.k;
+  const Uwall = 1 / (0.13 + Rwall + 0.04);
+  const Uroof = roof.U;
+  const Uwindow = glz.U;
+  const shgc = glz.shgc;
+
+  const perimeter = 2 * (geometry.L + geometry.W);
+  const grossWall = perimeter * geometry.H;
+  const windowArea = grossWall * design.windowRatio;
+  const opaqueWallArea = Math.max(grossWall - windowArea, 0);
+  const roofArea = geometry.L * geometry.W;
+  const floorArea = geometry.L * geometry.W;
+  const volume = geometry.L * geometry.W * geometry.H;
+
+  const wallMass = opaqueWallArea * thicknessM * wm.rho;
+  const wallCap = wallMass * wm.cp;
+  const roofCap = roof.mass * roofArea;
+  const airCap = volume * 1200;
+  const interiorCap = floorArea * 40000;
+  const totalCap = wallCap + roofCap + airCap + interiorCap;
+
+  return {
+    Uwall, Uroof, Uwindow, shgc,
+    opaqueWallArea, windowArea, roofArea, floorArea, volume,
+    totalCap, thicknessM,
+    wallLabel: wm.label, roofLabel: roof.label, glazingLabel: glz.label
+  };
+}
+
+/* ---------------- Simulation core ---------------- */
+
+function runCycle(cfg){
+  const dt = cfg.dt || 900;
+  const hours = cfg.hours || 24;
+  const steps = Math.round(hours * 3600 / dt);
+  const OM = orientationMultiplier(cfg.azimuth);
+  const achEff = effectiveACH(cfg.ach, cfg.wind);
+  const s = cfg.statics;
+
+  let Tin = cfg.startTemp;
+  const times = [];
+  const Tamb_series = [];
+  const Tin_series = [];
+
+  let e_condOpaque = 0, e_condRoof = 0, e_condWindow = 0, e_vent = 0, e_solar = 0;
+  let e_heat = 0, e_cool = 0;
+
+  for (let i = 0; i < steps; i++){
+    const tHours = (i * dt / 3600) % 24;
+    const Tamb = ambientAt(tHours, cfg.tmin, cfg.tmax);
+    const I = solarAt(tHours, cfg.solarPeak);
+
+    const q_opaque = s.Uwall * s.opaqueWallArea * (Tamb - Tin);
+    const q_roof = s.Uroof * s.roofArea * (Tamb - Tin);
+    const q_window = s.Uwindow * s.windowArea * (Tamb - Tin);
+    const q_vent = 0.333 * achEff * s.volume * (Tamb - Tin);
+    const q_solar = s.shgc * s.windowArea * I * OM;
+
+    e_condOpaque += q_opaque * dt / 3600000;
+    e_condRoof += q_roof * dt / 3600000;
+    e_condWindow += q_window * dt / 3600000;
+    e_vent += q_vent * dt / 3600000;
+    e_solar += q_solar * dt / 3600000;
+
+    const qNet = q_opaque + q_roof + q_window + q_vent + q_solar;
+    const Tfree = Tin + (qNet * dt) / s.totalCap;
+
+    let Tnext;
+    if (cfg.clamp){
+      if (Tfree > cfg.comfortMaxEff){
+        const cool = s.totalCap * (Tfree - cfg.comfortMaxEff) / dt;
+        e_cool += cool * dt / 3600000;
+        Tnext = cfg.comfortMaxEff;
+      } else if (Tfree < cfg.comfortMin){
+        const heat = s.totalCap * (cfg.comfortMin - Tfree) / dt;
+        e_heat += heat * dt / 3600000;
+        Tnext = cfg.comfortMin;
+      } else {
+        Tnext = Tfree;
+      }
+    } else {
+      Tnext = Tfree;
+    }
+
+    times.push(tHours);
+    Tamb_series.push(Tamb);
+    Tin_series.push(Tnext);
+    Tin = Tnext;
+  }
+
+  return {
+    times, Tamb_series, Tin_series,
+    e_condOpaque, e_condRoof, e_condWindow, e_vent, e_solar,
+    e_heat, e_cool, endTemp: Tin
+  };
+}
+
+function warmupTemp(statics, base, cycles){
+  let start = (base.tmin + base.tmax) / 2;
+  let last = null;
+  for (let c = 0; c < cycles; c++){
+    last = runCycle(Object.assign({}, base, { statics: statics, startTemp: start, clamp:false }));
+    start = last.endTemp;
+  }
+  return start;
+}
+
+function simulateDesign(design, geometry, climate, comfort){
+  const statics = computeStatics(design, geometry);
+  const comfortMaxEff = effectiveComfortMax(comfort.max, climate.humidity);
+
+  const base = {
+    tmin: climate.tmin, tmax: climate.tmax, solarPeak: climate.solar, wind: climate.wind,
+    ach: design.ach, azimuth: design.azimuth,
+    comfortMin: comfort.min, comfortMaxEff: comfortMaxEff
+  };
+
+  const startTemp = warmupTemp(statics, base, 3);
+
+  const freeRun = runCycle(Object.assign({}, base, { statics: statics, startTemp: startTemp, clamp:false }));
+  const clampedRun = runCycle(Object.assign({}, base, { statics: statics, startTemp: startTemp, clamp:true }));
+
+  const hoursInBand = freeRun.Tin_series.filter(function(t){
+    return t >= comfort.min && t <= comfortMaxEff;
+  }).length / freeRun.Tin_series.length * 24;
+
+  return {
+    statics: statics, comfortMaxEff: comfortMaxEff, freeRun: freeRun, clampedRun: clampedRun,
+    hoursInBand: hoursInBand,
+    backupEnergy: clampedRun.e_heat + clampedRun.e_cool,
+    peak: Math.max.apply(null, freeRun.Tin_series),
+    low: Math.min.apply(null, freeRun.Tin_series)
+  };
+}
+
+/* ---------------- Rendering: line chart ---------------- */
+
+function niceStep(range){
+  const rough = range / 5;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / mag;
+  let step;
+  if (norm < 1.5) step = 1;
+  else if (norm < 3) step = 2;
+  else if (norm < 7) step = 5;
+  else step = 10;
+  return step * mag;
+}
+
+function buildLineChartSVG(series, band, opts){
+  const W = opts.width || 720, H = opts.height || 300;
+  const pad = { l:42, r:14, t:14, b:26 };
+  const innerW = W - pad.l - pad.r;
+  const innerH = H - pad.t - pad.b;
+
+  let allVals = [];
+  series.forEach(function(s){ allVals = allVals.concat(s.data); });
+  allVals.push(band.min, band.max);
+  let yMin = Math.min.apply(null, allVals);
+  let yMax = Math.max.apply(null, allVals);
+  const pad_y = Math.max(1, (yMax - yMin) * 0.12);
+  yMin -= pad_y; yMax += pad_y;
+
+  const xMin = 0, xMax = 24;
+
+  function xScale(x){ return pad.l + (x - xMin) / (xMax - xMin) * innerW; }
+  function yScale(y){ return pad.t + (1 - (y - yMin) / (yMax - yMin)) * innerH; }
+
+  const step = niceStep(yMax - yMin);
+  const gridStart = Math.ceil(yMin / step) * step;
+  let gridLines = '';
+  for (let v = gridStart; v <= yMax; v += step){
+    const gy = yScale(v);
+    gridLines += '<line x1="' + pad.l + '" y1="' + gy + '" x2="' + (W - pad.r) + '" y2="' + gy + '" stroke="#28313A" stroke-width="1"/>';
+    gridLines += '<text x="' + (pad.l - 8) + '" y="' + (gy + 3) + '" text-anchor="end" font-size="9" fill="#5C6670" font-family="IBM Plex Mono, monospace">' + Math.round(v) + '</text>';
+  }
+
+  let xLabels = '';
+  [0, 6, 12, 18, 24].forEach(function(h){
+    const gx = xScale(h);
+    xLabels += '<text x="' + gx + '" y="' + (H - 6) + '" text-anchor="middle" font-size="9" fill="#5C6670" font-family="IBM Plex Mono, monospace">' + String(h).padStart(2, '0') + ':00</text>';
+  });
+
+  const bandY1 = yScale(band.max);
+  const bandY2 = yScale(band.min);
+  const bandRect = '<rect x="' + pad.l + '" y="' + bandY1 + '" width="' + innerW + '" height="' + (bandY2 - bandY1) + '" fill="#D8A94E" opacity="0.14"/>';
+
+  let seriesSVG = '';
+  series.forEach(function(s){
+    const pts = s.data.map(function(v, i){
+      return xScale(s.times[i]) + ',' + yScale(v);
+    }).join(' ');
+    const dash = s.dash ? ' stroke-dasharray="5,4"' : '';
+    seriesSVG += '<polyline points="' + pts + '" fill="none" stroke="' + s.color + '" stroke-width="2"' + dash + '/>';
+  });
+
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">' +
+    gridLines + bandRect + seriesSVG + xLabels +
+    '</svg>';
+}
+
+/* ---------------- Rendering: heat balance bars ---------------- */
+
+function buildBalanceSVG(rows){
+  const W = 340, rowH = 34, pad = { l:10, r:10, t:6, b:6 };
+  const H = rows.length * rowH + pad.t + pad.b;
+  const midX = W / 2;
+  const maxAbs = Math.max.apply(null, rows.map(function(r){ return Math.abs(r.value); })) * 1.15 || 1;
+  const halfW = (W - pad.l - pad.r) / 2 - 90;
+
+  let out = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">';
+  out += '<line x1="' + midX + '" y1="0" x2="' + midX + '" y2="' + H + '" stroke="#3A4650" stroke-width="1"/>';
+  rows.forEach(function(r, i){
+    const cy = pad.t + i * rowH + rowH / 2;
+    const w = Math.abs(r.value) / maxAbs * halfW;
+    const color = r.value >= 0 ? '#D8A94E' : '#5C8FC2';
+    const x = r.value >= 0 ? midX : midX - w;
+    out += '<text x="4" y="' + (cy - 5) + '" font-size="9.5" fill="#8D97A3" font-family="IBM Plex Mono, monospace">' + r.label + '</text>';
+    out += '<rect x="' + x + '" y="' + (cy) + '" width="' + w + '" height="8" fill="' + color + '"/>';
+    out += '<text x="' + (r.value >= 0 ? (midX + w + 6) : (midX - w - 6)) + '" y="' + (cy + 7) + '" text-anchor="' + (r.value >= 0 ? 'start' : 'end') + '" font-size="9.5" fill="#E7EAEE" font-family="IBM Plex Mono, monospace">' + (r.value >= 0 ? '+' : '') + r.value.toFixed(1) + '</text>';
+  });
+  out += '</svg>';
+  return out;
+}
+
+/* ---------------- Rendering: section diagram ---------------- */
+
+function buildSectionSVG(design, statics, statusColor){
+  const thicknessPx = 4 + Math.min(1, (design.wallThicknessMM - 100) / 500) * 15;
+  const winRatio = design.windowRatio;
+  const winSize = 14 + Math.min(1, winRatio / 0.5) * 44;
+  const pitched = (design.roofAssembly === 'metal' || design.roofAssembly === 'thatch');
+  const roofRise = pitched ? 40 : 12;
+
+  const wx = 100, wy = 110, ww = 200, wh = 110;
+  const winW = winSize, winH = winSize * 0.8;
+  const winX = 200 - winW / 2;
+  const winY = 220 - winH - 30;
+
+  let roofShape;
+  if (pitched){
+    roofShape = '<polygon points="88,' + wy + ' 200,' + (wy - roofRise) + ' 312,' + wy + '" fill="none" stroke="' + statusColor + '" stroke-width="2"/>';
+  } else {
+    roofShape = '<rect x="92" y="' + (wy - roofRise) + '" width="216" height="' + roofRise + '" fill="' + statusColor + '" fill-opacity="0.15" stroke="' + statusColor + '" stroke-width="2"/>';
+  }
+
+  return '<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">' +
+    '<line x1="40" y1="220" x2="360" y2="220" stroke="#3A4650" stroke-width="1"/>' +
+    roofShape +
+    '<rect x="' + wx + '" y="' + wy + '" width="' + ww + '" height="' + wh + '" fill="' + statusColor + '" fill-opacity="0.07" stroke="' + statusColor + '" stroke-width="' + thicknessPx + '"/>' +
+    '<rect x="' + winX + '" y="' + winY + '" width="' + winW + '" height="' + winH + '" fill="#10141A" stroke="' + statusColor + '" stroke-width="1.5"/>' +
+    '<circle cx="340" cy="52" r="13" fill="none" stroke="#D8A94E" stroke-width="1.5"/>' +
+    '<g stroke="#D8A94E" stroke-width="1.5">' +
+      '<line x1="340" y1="28" x2="340" y2="20"/><line x1="340" y1="84" x2="340" y2="76"/>' +
+      '<line x1="316" y1="52" x2="308" y2="52"/><line x1="364" y1="52" x2="372" y2="52"/>' +
+    '</g>' +
+    '<text x="40" y="236" fill="#5C6670" font-family="IBM Plex Mono, monospace" font-size="9">wall ' + design.wallThicknessMM + 'mm</text>' +
+    '<text x="360" y="236" text-anchor="end" fill="#5C6670" font-family="IBM Plex Mono, monospace" font-size="9">glazing ' + Math.round(winRatio * 100) + '%</text>' +
+    '</svg>';
+}
+
+/* ---------------- UI wiring ---------------- */
+
+function fmt1(n){ return n.toFixed(1); }
+
+function readState(){
+  return {
+    climate: {
+      tmin: parseFloat(document.getElementById('tmin').value),
+      tmax: parseFloat(document.getElementById('tmax').value),
+      solar: parseFloat(document.getElementById('solar').value),
+      wind: parseFloat(document.getElementById('wind').value),
+      humidity: parseFloat(document.getElementById('humidity').value)
+    },
+    geometry: {
+      L: parseFloat(document.getElementById('lenL').value),
+      W: parseFloat(document.getElementById('lenW').value),
+      H: parseFloat(document.getElementById('lenH').value)
+    },
+    design: {
+      wallMaterial: document.getElementById('wallMaterial').value,
+      wallThicknessMM: parseFloat(document.getElementById('wallThickness').value),
+      roofAssembly: document.getElementById('roofAssembly').value,
+      glazing: document.getElementById('glazing').value,
+      windowRatio: parseFloat(document.getElementById('windowRatio').value) / 100,
+      ach: parseFloat(document.getElementById('ach').value),
+      azimuth: parseFloat(document.getElementById('azimuth').value)
+    },
+    comfort: {
+      min: parseFloat(document.getElementById('comfortMin').value),
+      max: parseFloat(document.getElementById('comfortMax').value)
+    }
+  };
+}
+
+function updateLabels(state){
+  document.getElementById('ambVal').textContent = Math.round(state.climate.tmin) + '° / ' + Math.round(state.climate.tmax) + '°C';
+  document.getElementById('solarVal').textContent = Math.round(state.climate.solar) + ' W/m²';
+  document.getElementById('windVal').textContent = state.climate.wind.toFixed(1) + ' m/s';
+  document.getElementById('humVal').textContent = Math.round(state.climate.humidity) + '%';
+  document.getElementById('dimVal').textContent = state.geometry.L.toFixed(1) + ' × ' + state.geometry.W.toFixed(1) + ' m';
+  document.getElementById('heightVal').textContent = state.geometry.H.toFixed(1) + ' m';
+  document.getElementById('azVal').textContent = Math.round(state.design.azimuth) + '° · ' + facingLabel(state.design.azimuth);
+  document.getElementById('thickVal').textContent = Math.round(state.design.wallThicknessMM) + ' mm';
+  document.getElementById('winRatioVal').textContent = Math.round(state.design.windowRatio * 100) + '%';
+  document.getElementById('achVal').textContent = state.design.ach.toFixed(1) + ' ACH';
+  document.getElementById('comfortVal').textContent = state.comfort.min.toFixed(0) + '° – ' + state.comfort.max.toFixed(0) + '°C';
+}
+
+function recompute(){
+  const state = readState();
+
+  if (state.climate.tmax < state.climate.tmin + 2){
+    document.getElementById('tmax').value = state.climate.tmin + 2;
+    state.climate.tmax = state.climate.tmin + 2;
+  }
+  if (state.comfort.max < state.comfort.min + 2){
+    document.getElementById('comfortMax').value = state.comfort.min + 2;
+    state.comfort.max = state.comfort.min + 2;
+  }
+
+  updateLabels(state);
+
+  const result = simulateDesign(state.design, state.geometry, state.climate, state.comfort);
+  const baseResult = simulateDesign(BASELINE_DESIGN, state.geometry, state.climate, state.comfort);
+
+  const pctChange = (baseResult.backupEnergy - result.backupEnergy) / Math.max(baseResult.backupEnergy, 0.01) * 100;
+
+  document.getElementById('kpiPeak').textContent = fmt1(result.peak) + '°C';
+  document.getElementById('kpiLow').textContent = fmt1(result.low) + '°C';
+  document.getElementById('kpiSwing').textContent = fmt1(result.peak - result.low) + '°C';
+  document.getElementById('kpiHours').textContent = fmt1(result.hoursInBand) + ' h';
+  document.getElementById('kpiEnergy').textContent = fmt1(result.backupEnergy) + ' kWh';
+  document.getElementById('kpiCompare').textContent = (pctChange >= 0 ? '−' : '+') + Math.abs(pctChange).toFixed(0) + '%';
+
+  let statusColor, statusWord;
+  if (result.hoursInBand >= 16){ statusColor = '#5FAE7A'; statusWord = 'holding comfort well without backup'; }
+  else if (result.hoursInBand >= 8){ statusColor = '#D8A94E'; statusWord = 'partially passive — some backup needed'; }
+  else { statusColor = '#C1594B'; statusWord = 'relying heavily on backup heating or cooling'; }
+
+  document.getElementById('statusDot').style.background = statusColor;
+  document.getElementById('statusText').innerHTML = 'This design is <b>' + statusWord + '</b> under the current site conditions — ' + fmt1(result.hoursInBand) + ' of 24 hours inside the comfort band on passive performance alone.';
+
+  const chartSeries = [
+    { data: result.freeRun.Tamb_series, times: result.freeRun.times, color: '#5C6670' },
+    { data: result.freeRun.Tin_series, times: result.freeRun.times, color: '#D8A94E' },
+    { data: result.clampedRun.Tin_series, times: result.clampedRun.times, color: '#5C8FC2', dash: true }
+  ];
+  document.getElementById('chartHost').innerHTML = buildLineChartSVG(chartSeries, { min: state.comfort.min, max: result.comfortMaxEff }, {});
+
+  document.getElementById('sectionHost').innerHTML = buildSectionSVG(state.design, result.statics, statusColor);
+
+  const balanceRows = [
+    { label: 'Wall conduction', value: result.freeRun.e_condOpaque },
+    { label: 'Roof conduction', value: result.freeRun.e_condRoof },
+    { label: 'Window conduction', value: result.freeRun.e_condWindow },
+    { label: 'Air exchange', value: result.freeRun.e_vent },
+    { label: 'Solar gain, glazing', value: result.freeRun.e_solar },
+    { label: 'Backup heating', value: result.clampedRun.e_heat },
+    { label: 'Backup cooling', value: -result.clampedRun.e_cool }
+  ];
+  document.getElementById('balanceHost').innerHTML = buildBalanceSVG(balanceRows);
+
+  const tbody = document.querySelector('#assemblyTable tbody');
+  tbody.innerHTML =
+    '<tr><td>Wall</td><td class="num">' + result.statics.Uwall.toFixed(2) + ' W/m²K</td><td class="num">' + result.statics.opaqueWallArea.toFixed(1) + ' m²</td><td class="num">' + (result.freeRun.e_condOpaque >= 0 ? '+' : '') + result.freeRun.e_condOpaque.toFixed(1) + ' kWh</td></tr>' +
+    '<tr><td>Roof</td><td class="num">' + result.statics.Uroof.toFixed(2) + ' W/m²K</td><td class="num">' + result.statics.roofArea.toFixed(1) + ' m²</td><td class="num">' + (result.freeRun.e_condRoof >= 0 ? '+' : '') + result.freeRun.e_condRoof.toFixed(1) + ' kWh</td></tr>' +
+    '<tr><td>Windows</td><td class="num">' + result.statics.Uwindow.toFixed(2) + ' W/m²K</td><td class="num">' + result.statics.windowArea.toFixed(1) + ' m²</td><td class="num">' + (result.freeRun.e_condWindow >= 0 ? '+' : '') + result.freeRun.e_condWindow.toFixed(1) + ' kWh</td></tr>' +
+    '<tr><td>Ventilation</td><td class="num">' + effectiveACH(state.design.ach, state.climate.wind).toFixed(2) + ' ACH (eff.)</td><td class="num">' + result.statics.volume.toFixed(1) + ' m³</td><td class="num">' + (result.freeRun.e_vent >= 0 ? '+' : '') + result.freeRun.e_vent.toFixed(1) + ' kWh</td></tr>' +
+    '<tr><td>Solar, glazing</td><td class="num">SHGC ' + result.statics.shgc.toFixed(2) + '</td><td class="num">' + result.statics.windowArea.toFixed(1) + ' m²</td><td class="num">+' + result.freeRun.e_solar.toFixed(1) + ' kWh</td></tr>';
+}
+
+function applyDefaults(){
+  document.getElementById('tmin').value = DEFAULTS.climate.tmin;
+  document.getElementById('tmax').value = DEFAULTS.climate.tmax;
+  document.getElementById('solar').value = DEFAULTS.climate.solar;
+  document.getElementById('wind').value = DEFAULTS.climate.wind;
+  document.getElementById('humidity').value = DEFAULTS.climate.humidity;
+
+  document.getElementById('lenL').value = DEFAULTS.geometry.L;
+  document.getElementById('lenW').value = DEFAULTS.geometry.W;
+  document.getElementById('lenH').value = DEFAULTS.geometry.H;
+  document.getElementById('azimuth').value = DEFAULTS.design.azimuth;
+
+  document.getElementById('wallMaterial').value = DEFAULTS.design.wallMaterial;
+  document.getElementById('wallThickness').value = DEFAULTS.design.wallThicknessMM;
+  document.getElementById('roofAssembly').value = DEFAULTS.design.roofAssembly;
+
+  document.getElementById('windowRatio').value = DEFAULTS.design.windowRatio * 100;
+  document.getElementById('glazing').value = DEFAULTS.design.glazing;
+  document.getElementById('ach').value = DEFAULTS.design.ach;
+
+  document.getElementById('comfortMin').value = DEFAULTS.comfort.min;
+  document.getElementById('comfortMax').value = DEFAULTS.comfort.max;
+
+  document.querySelectorAll('.preset-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelector('.preset-btn[data-preset="cold"]').classList.add('active');
+}
+
+let pending = false;
+function scheduleRecompute(){
+  if (pending) return;
+  pending = true;
+  requestAnimationFrame(function(){
+    pending = false;
+    recompute();
+  });
+}
+
+function initListeners(){
+  const rangeIds = ['tmin','tmax','solar','wind','humidity','lenL','lenW','lenH','azimuth',
+                     'wallThickness','windowRatio','ach','comfortMin','comfortMax'];
+  rangeIds.forEach(function(id){
+    document.getElementById(id).addEventListener('input', scheduleRecompute);
+  });
+  ['wallMaterial','roofAssembly','glazing'].forEach(function(id){
+    document.getElementById(id).addEventListener('change', scheduleRecompute);
+  });
+
+  document.querySelectorAll('.preset-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.preset-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      const p = CLIMATE_PRESETS[btn.dataset.preset];
+      document.getElementById('tmin').value = p.tmin;
+      document.getElementById('tmax').value = p.tmax;
+      document.getElementById('solar').value = p.solar;
+      document.getElementById('wind').value = p.wind;
+      document.getElementById('humidity').value = p.humidity;
+      scheduleRecompute();
+    });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    applyDefaults();
+    scheduleRecompute();
+  });
+
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('backdrop');
+  const toggle = document.getElementById('sidebarToggle');
+  toggle.addEventListener('click', function(){
+    sidebar.classList.add('open');
+    backdrop.classList.add('open');
+  });
+  backdrop.addEventListener('click', function(){
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('open');
+  });
+}
+
+document.querySelector('.preset-btn[data-preset="cold"]').classList.add('active');
+initListeners();
+recompute();
+
+</script>
+</body>
+</html>
