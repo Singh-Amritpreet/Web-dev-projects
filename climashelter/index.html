@@ -213,7 +213,9 @@ input[type=range]::-moz-range-thumb{
   color:var(--muted);font-size:10px;margin-top:9px
 }
 .legend span{display:flex;align-items:center;gap:5px}
-.legend i{width:14px;height:3px;display:inline-block}
+.legend i{width:18px;height:3px;display:inline-block;background:#5C6670;border-radius:2px}
+.legend i.passive{background:#D8A94E}
+.legend i.backup{height:0;border-top:3px dashed #5C8FC2;background:transparent}
 .legend i.band{width:10px;height:10px;border-radius:2px}
 
 table.a-table{
@@ -443,10 +445,10 @@ table.a-table td.num{font-family:"Courier New",monospace}
         <div class="panel-sub">Simulated indoor temperature against the ambient cycle, once the building has settled into a repeating daily pattern.</div>
         <div id="chartHost"></div>
         <div class="legend">
-          <span><i style="background:var(--text-faint)"></i>Ambient</span>
-          <span><i style="background:var(--accent)"></i>Indoor — your design, passive</span>
-          <span><i class="dashed" style="color:var(--loss)"></i>Indoor — with backup conditioning</span>
-          <span><i class="band" style="background:var(--accent); opacity:0.25;"></i>Comfort target</span>
+          <span><i class="ambient"></i>Ambient</span>
+          <span><i class="passive"></i>Indoor — your design, passive</span>
+          <span><i class="backup"></i>Indoor — with backup conditioning</span>
+          <span><i class="band" style="background:#D8A94E; opacity:0.25;"></i>Comfort target</span>
         </div>
 </div>
 
